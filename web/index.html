@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🔗 Go URL Shortener</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    animation: {
+                        'fade-in': 'fadeIn 0.5s ease-in-out',
+                        'slide-up': 'slideUp 0.3s ease-out',
+                        'pulse-slow': 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                    },
+                    keyframes: {
+                        fadeIn: {
+                            '0%': { opacity: '0' },
+                            '100%': { opacity: '1' }
+                        },
+                        slideUp: {
+                            '0%': { transform: 'translateY(10px)', opacity: '0' },
+                            '100%': { transform: 'translateY(0)', opacity: '1' }
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="h-full bg-gradient-to-br from-blue-50 via-white to-purple-50">
+    <div class="min-h-full flex flex-col">
+        <!-- Header -->
+        <header class="bg-white/80 backdrop-blur-sm border-b border-gray-200 sticky top-0 z-10">
+            <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center space-x-3">
+                        <div class="w-10 h-10 bg-gradient-to-r from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
+                            <i class="fas fa-link text-white text-xl"></i>
+                        </div>
+                        <h1 class="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+                            Go URL Shortener
+                        </h1>
+                    </div>
+                    <div class="hidden sm:flex items-center space-x-4 text-sm text-gray-600">
+                        <span class="flex items-center space-x-1">
+                            <i class="fas fa-shield-alt text-green-500"></i>
+                            <span>SHA-256 Secured</span>
+                        </span>
+                        <span class="flex items-center space-x-1">
+                            <i class="fas fa-bolt text-yellow-500"></i>
+                            <span>Lightning Fast</span>
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="flex-1 flex items-center justify-center px-4 sm:px-6 lg:px-8 py-12">
+            <div class="w-full max-w-2xl" x-data="urlShortener()">
+                <!-- Hero Section -->
+                <div class="text-center mb-12">
+                    <h2 class="text-4xl font-bold text-gray-900 mb-4">
+                        Shorten Your URLs
+                        <span class="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600">
+                            Instantly
+                        </span>
+                    </h2>
+                    <p class="text-xl text-gray-600 max-w-md mx-auto">
+                        Transform long URLs into short, shareable links with our secure SHA-256 based shortener
+                    </p>
+                </div>
+
+                <!-- URL Shortener Form -->
+                <div class="bg-white rounded-2xl shadow-xl border border-gray-100 p-8 mb-8">
+                    <form @submit.prevent="shortenUrl" class="space-y-6">
+                        <div>
+                            <label for="url" class="block text-sm font-semibold text-gray-700 mb-3">
+                                <i class="fas fa-globe mr-2"></i>
+                                Enter your long URL
+                            </label>
+                            <div class="relative">
+                                <input 
+                                    type="url" 
+                                    id="url"
+                                    x-model="longUrl"
+                                    placeholder="https://example.com/very-long-url-that-needs-shortening"
+                                    class="w-full px-4 py-4 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 text-gray-700 placeholder-gray-400"
+                                    required
+                                    :disabled="loading"
+                                >
+                                <div class="absolute inset-y-0 right-0 flex items-center pr-4">
+                                    <i class="fas fa-link text-gray-400" x-show="!loading"></i>
+                                    <i class="fas fa-spinner fa-spin text-blue-500" x-show="loading"></i>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <button 
+                            type="submit"
+                            :disabled="loading || !longUrl"
+                            class="w-full bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 disabled:from-gray-300 disabled:to-gray-400 text-white font-semibold py-4 px-6 rounded-xl transition-all duration-200 transform hover:scale-[1.02] disabled:scale-100 disabled:cursor-not-allowed shadow-lg hover:shadow-xl"
+                        >
+                            <span x-show="!loading" class="flex items-center justify-center space-x-2">
+                                <i class="fas fa-compress-alt"></i>
+                                <span>Shorten URL</span>
+                            </span>
+                            <span x-show="loading" class="flex items-center justify-center space-x-2">
+                                <i class="fas fa-spinner fa-spin"></i>
+                                <span>Shortening...</span>
+                            </span>
+                        </button>
+                    </form>
+
+                    <!-- Error Message -->
+                    <div x-show="error" x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0 transform scale-95" x-transition:enter-end="opacity-100 transform scale-100" class="mt-4 p-4 bg-red-50 border border-red-200 rounded-xl">
+                        <div class="flex items-center space-x-2 text-red-700">
+                            <i class="fas fa-exclamation-triangle"></i>
+                            <span x-text="error"></span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Result Section -->
+                <div x-show="shortenedUrl" x-transition:enter="transition ease-out duration-500" x-transition:enter-start="opacity-0 transform translate-y-4" x-transition:enter-end="opacity-100 transform translate-y-0" class="bg-white rounded-2xl shadow-xl border border-gray-100 p-8">
+                    <div class="text-center mb-6">
+                        <div class="inline-flex items-center justify-center w-16 h-16 bg-green-100 rounded-full mb-4">
+                            <i class="fas fa-check text-green-600 text-2xl"></i>
+                        </div>
+                        <h3 class="text-2xl font-bold text-gray-900 mb-2">URL Shortened Successfully!</h3>
+                        <p class="text-gray-600">Your new short URL is ready to share</p>
+                    </div>
+
+                    <div class="space-y-6">
+                        <!-- Original URL -->
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">
+                                <i class="fas fa-link mr-2"></i>
+                                Original URL
+                            </label>
+                            <div class="bg-gray-50 rounded-xl p-4 border">
+                                <p class="text-gray-700 break-all text-sm" x-text="originalUrl"></p>
+                            </div>
+                        </div>
+
+                        <!-- Shortened URL -->
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">
+                                <i class="fas fa-compress-alt mr-2"></i>
+                                Short URL
+                            </label>
+                            <div class="flex space-x-2">
+                                <input 
+                                    type="text" 
+                                    :value="getFullShortUrl()"
+                                    readonly
+                                    class="flex-1 bg-blue-50 border border-blue-200 rounded-xl px-4 py-3 text-blue-700 font-mono text-sm"
+                                    x-ref="shortUrlInput"
+                                >
+                                <button 
+                                    @click="copyToClipboard"
+                                    class="px-6 py-3 bg-blue-500 hover:bg-blue-600 text-white rounded-xl transition-colors duration-200 font-semibold shadow-md hover:shadow-lg"
+                                    :class="{'bg-green-500 hover:bg-green-600': copied, 'bg-blue-500 hover:bg-blue-600': !copied}"
+                                >
+                                    <i class="fas fa-copy" x-show="!copied"></i>
+                                    <i class="fas fa-check" x-show="copied"></i>
+                                </button>
+                            </div>
+                            <p class="text-xs text-gray-500 mt-2" x-show="copied" x-transition>
+                                <i class="fas fa-check-circle text-green-500 mr-1"></i>
+                                Copied to clipboard!
+                            </p>
+                        </div>
+
+                        <!-- Action Buttons -->
+                        <div class="flex flex-col sm:flex-row space-y-3 sm:space-y-0 sm:space-x-3">
+                            <button 
+                                @click="testShortUrl"
+                                class="flex-1 bg-purple-500 hover:bg-purple-600 text-white font-semibold py-3 px-6 rounded-xl transition-colors duration-200 shadow-md hover:shadow-lg"
+                            >
+                                <i class="fas fa-external-link-alt mr-2"></i>
+                                Test Short URL
+                            </button>
+                            <button 
+                                @click="reset"
+                                class="flex-1 bg-gray-500 hover:bg-gray-600 text-white font-semibold py-3 px-6 rounded-xl transition-colors duration-200 shadow-md hover:shadow-lg"
+                            >
+                                <i class="fas fa-plus mr-2"></i>
+                                Shorten Another
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- URL History -->
+                <div x-show="urlHistory.length > 0" x-transition:enter="transition ease-out duration-500" x-transition:enter-start="opacity-0 transform translate-y-4" x-transition:enter-end="opacity-100 transform translate-y-0" class="mt-8 bg-white rounded-2xl shadow-xl border border-gray-100 p-8">
+                    <h3 class="text-xl font-bold text-gray-900 mb-6 flex items-center">
+                        <i class="fas fa-history mr-3 text-blue-500"></i>
+                        Recent URLs
+                    </h3>
+                    <div class="space-y-4">
+                        <template x-for="(item, index) in urlHistory.slice().reverse()" :key="index">
+                            <div class="border border-gray-200 rounded-xl p-4 hover:bg-gray-50 transition-colors duration-200">
+                                <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-2 sm:space-y-0">
+                                    <div class="flex-1 min-w-0">
+                                        <p class="text-sm text-gray-600 truncate" x-text="item.original"></p>
+                                        <p class="text-blue-600 font-mono text-sm" x-text="getFullShortUrl(item.short)"></p>
+                                    </div>
+                                    <div class="flex space-x-2">
+                                        <button 
+                                            @click="copyToClipboard(getFullShortUrl(item.short))"
+                                            class="px-3 py-1 text-xs bg-blue-100 hover:bg-blue-200 text-blue-700 rounded-lg transition-colors duration-200"
+                                        >
+                                            <i class="fas fa-copy"></i>
+                                        </button>
+                                        <button 
+                                            @click="window.open(getFullShortUrl(item.short), '_blank')"
+                                            class="px-3 py-1 text-xs bg-purple-100 hover:bg-purple-200 text-purple-700 rounded-lg transition-colors duration-200"
+                                        >
+                                            <i class="fas fa-external-link-alt"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </template>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <!-- Footer -->
+        <footer class="bg-white/80 backdrop-blur-sm border-t border-gray-200 mt-12">
+            <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+                <div class="flex flex-col sm:flex-row items-center justify-between space-y-4 sm:space-y-0">
+                    <div class="flex items-center space-x-4 text-sm text-gray-600">
+                        <span class="flex items-center space-x-1">
+                            <i class="fab fa-golang text-blue-500"></i>
+                            <span>Built with Go</span>
+                        </span>
+                        <span class="flex items-center space-x-1">
+                            <i class="fas fa-lock text-green-500"></i>
+                            <span>SHA-256 Secured</span>
+                        </span>
+                    </div>
+                    <div class="text-sm text-gray-500">
+                        © 2025 Go URL Shortener
+                    </div>
+                </div>
+            </div>
+        </footer>
+    </div>
+
+    <script>
+        function urlShortener() {
+            return {
+                longUrl: '',
+                shortenedUrl: '',
+                originalUrl: '',
+                loading: false,
+                error: '',
+                copied: false,
+                urlHistory: JSON.parse(localStorage.getItem('urlHistory') || '[]'),
+
+                async shortenUrl() {
+                    if (!this.longUrl) return;
+
+                    this.loading = true;
+                    this.error = '';
+
+                    try {
+                        const response = await fetch('/api/v1/shorten', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                            },
+                            body: JSON.stringify(this.longUrl)
+                        });
+
+                        if (!response.ok) {
+                            throw new Error(`HTTP error! status: ${response.status}`);
+                        }
+
+                        const data = await response.json();
+                        this.shortenedUrl = data.shortened_url;
+                        this.originalUrl = data.url;
+
+                        // Add to history
+                        const historyItem = {
+                            original: this.originalUrl,
+                            short: this.shortenedUrl,
+                            timestamp: Date.now()
+                        };
+
+                        // Remove duplicates and add new item
+                        this.urlHistory = this.urlHistory.filter(item => item.original !== this.originalUrl);
+                        this.urlHistory.push(historyItem);
+
+                        // Keep only last 10 items
+                        if (this.urlHistory.length > 10) {
+                            this.urlHistory = this.urlHistory.slice(-10);
+                        }
+
+                        // Save to localStorage
+                        localStorage.setItem('urlHistory', JSON.stringify(this.urlHistory));
+
+                    } catch (err) {
+                        console.error('Error shortening URL:', err);
+                        this.error = 'Failed to shorten URL. Please check if the server is running on the correct port.';
+                    } finally {
+                        this.loading = false;
+                    }
+                },
+
+                getFullShortUrl(shortCode = null) {
+                    const code = shortCode || this.shortenedUrl;
+                    return `${window.location.origin}/api/v1/${code}`;
+                },
+
+                async copyToClipboard(text = null) {
+                    const textToCopy = text || this.getFullShortUrl();
+                    
+                    try {
+                        await navigator.clipboard.writeText(textToCopy);
+                        this.copied = true;
+                        setTimeout(() => this.copied = false, 2000);
+                    } catch (err) {
+                        console.error('Failed to copy:', err);
+                        // Fallback for older browsers
+                        const textArea = document.createElement('textarea');
+                        textArea.value = textToCopy;
+                        document.body.appendChild(textArea);
+                        textArea.select();
+                        document.execCommand('copy');
+                        document.body.removeChild(textArea);
+                        this.copied = true;
+                        setTimeout(() => this.copied = false, 2000);
+                    }
+                },
+
+                testShortUrl() {
+                    if (this.shortenedUrl) {
+                        window.open(this.getFullShortUrl(), '_blank');
+                    }
+                },
+
+                reset() {
+                    this.longUrl = '';
+                    this.shortenedUrl = '';
+                    this.originalUrl = '';
+                    this.error = '';
+                    this.copied = false;
+                }
+            }
+        }
+
+        // Add some nice animations on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            const elements = document.querySelectorAll('[x-data]');
+            elements.forEach((el, index) => {
+                el.style.animationDelay = `${index * 100}ms`;
+                el.classList.add('animate-fade-in');
+            });
+        });
+    </script>
+</body>
+</html>
