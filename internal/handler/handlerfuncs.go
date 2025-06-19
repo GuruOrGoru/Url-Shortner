@@ -2,23 +2,11 @@ package handler
 
 import (
 	"encoding/json"
-	"log"
 	"net/http"
 
 	"github.com/go-chi/chi/v5"
 	urlModel "github.com/guruorgoru/ushort/internal/model"
 )
-
-func RootHandler(w http.ResponseWriter, r *http.Request) {
-	response := struct {
-		Message string `json:"message"`
-	}{
-		Message: "Hello World!",
-	}
-	if err := json.NewEncoder(w).Encode(response); err != nil {
-		log.Fatalln("Error while internal encoding: ", err)
-	}
-}
 
 func ShortenHandler(w http.ResponseWriter, r *http.Request) {
 	var originalUrl string

@@ -12,16 +12,10 @@ import (
 func NewRouter() chi.Router {
 	r := chi.NewRouter()
 	r.Use(middleware.Logger, middleware.Recoverer)
-
-	r.Route("/api/v1", getRoutes)
 	r.Get("/", serveIndex)
-	return r
-}
-
-func getRoutes(r chi.Router) {
-	r.Get("/", handler.RootHandler)
 	r.Post("/shorten", handler.ShortenHandler)
 	r.Get("/{short}", handler.RedirectHandler)
+	return r
 }
 
 func serveIndex(w http.ResponseWriter, r *http.Request) {

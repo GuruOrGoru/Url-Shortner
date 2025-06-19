@@ -272,7 +272,7 @@
                     this.error = '';
 
                     try {
-                        const response = await fetch('/api/v1/shorten', {
+                        const response = await fetch('/shorten', {
                             method: 'POST',
                             headers: {
                                 'Content-Type': 'application/json',
@@ -317,7 +317,7 @@
 
                 getFullShortUrl(shortCode = null) {
                     const code = shortCode || this.shortenedUrl;
-                    return `${window.location.origin}/api/v1/${code}`;
+                    return `${window.location.origin}/${code}`;
                 },
 
                 async copyToClipboard(text = null) {
