@@ -18,6 +18,7 @@ func NewRouter() chi.Router {
 		AllowCredentials: true,
 		MaxAge:           300,
 	}))
+	r.Get("/{short}", handler.RedirectHandler)
 	r.Route("/api/v1", getRoutes)
 	return r
 }
@@ -25,5 +26,4 @@ func NewRouter() chi.Router {
 func getRoutes(r chi.Router) {
 	r.Get("/", handler.RootHandler)
 	r.Post("/shorten", handler.ShortenHandler)
-	r.Get("/{short}", handler.RedirectHandler)
 }
