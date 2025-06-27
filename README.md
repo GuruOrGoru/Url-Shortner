@@ -44,20 +44,20 @@ GET /9f86d08a(or any short url you get from the output)
 
     Language: Go
 
-    Framework: net/http or chi
+    Framework: chi & CORS
 
     Hashing: crypto/sha256
 
 🧑‍💻 Running the Project
 
 # Clone the repo
-git clone https://github.com/yourusername/url-shortener-go.git
-cd url-shortener-go
+git clone https://github.com/guruorgoru/Url-Shortener
+cd url-shortener
 
 # Run the server
 make run
 
-Server runs on: http://localhost:8080
+Server runs on: http://localhost:8414
 🧠 Notes
 
     SHA-256 is deterministic, so the same input always results in the same short URL.

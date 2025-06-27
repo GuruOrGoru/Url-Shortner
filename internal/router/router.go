@@ -5,9 +5,10 @@ import (
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/go-chi/cors"
 	"github.com/guruorgoru/ushort/internal/handler"
+	"gorm.io/gorm"
 )
 
-func NewRouter() chi.Router {
+func NewRouter(db *gorm.DB) chi.Router {
 	r := chi.NewRouter()
 	r.Use(middleware.Logger, middleware.Recoverer)
 	r.Use(cors.Handler(cors.Options{
@@ -18,12 +19,10 @@ func NewRouter() chi.Router {
 		AllowCredentials: true,
 		MaxAge:           300,
 	}))
-	r.Get("/{short}", handler.RedirectHandler)
-	r.Route("/api/v1", getRoutes)
+	r.Get("/{short}", handler.RedirectHandler(db))
+	r.Route("/api/v1", func(r chi.Router) {
+		r.Get("/", handler.RootHandler())
+		r.Post("/shorten", handler.ShortenHandler(db))
+	})
 	return r
-}
-
-func getRoutes(r chi.Router) {
-	r.Get("/", handler.RootHandler)
-	r.Post("/shorten", handler.ShortenHandler)
 }

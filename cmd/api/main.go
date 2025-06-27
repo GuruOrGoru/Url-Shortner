@@ -1,13 +1,14 @@
 package main
 
 import (
+	"github.com/guruorgoru/ushort/internal/router"
+	"github.com/joho/godotenv"
+	"gorm.io/driver/postgres"
+	"gorm.io/gorm"
 	"log"
 	"net/http"
 	"os"
 	"time"
-
-	"github.com/guruorgoru/ushort/internal/router"
-	"github.com/joho/godotenv"
 )
 
 func main() {
@@ -20,8 +21,17 @@ func main() {
 	if portstr == "" {
 		log.Fatalln("Port not set in env")
 	}
+	dsn := os.Getenv("DSN_DB")
+	if dsn == "" {
+		log.Fatalln("Dsn Not set in set env")
+	}
 
-	router := router.NewRouter()
+	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
+	if err != nil {
+		log.Fatalln("Failed to establish connection to the database")
+	}
+
+	router := router.NewRouter(db)
 
 	server := &http.Server{
 		Addr:         ":" + portstr,
