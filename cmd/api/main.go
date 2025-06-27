@@ -1,14 +1,16 @@
 package main
 
 import (
-	"github.com/guruorgoru/ushort/internal/router"
-	"github.com/joho/godotenv"
-	"gorm.io/driver/postgres"
-	"gorm.io/gorm"
 	"log"
 	"net/http"
 	"os"
 	"time"
+
+	urlModel "github.com/guruorgoru/ushort/internal/model"
+	"github.com/guruorgoru/ushort/internal/router"
+	"github.com/joho/godotenv"
+	"gorm.io/driver/postgres"
+	"gorm.io/gorm"
 )
 
 func main() {
@@ -30,6 +32,11 @@ func main() {
 	if err != nil {
 		log.Fatalln("Failed to establish connection to the database")
 	}
+	err = db.AutoMigrate(&urlModel.Url{})
+	if err != nil {
+		log.Fatal("Failed to migrate database:", err)
+	}
+	log.Println("Database migration completed successfully")
 
 	router := router.NewRouter(db)
 

@@ -14,6 +14,10 @@ type Url struct {
 	ShortenedURL string `gorm:"primaryKey" json:"shortened_url"`
 }
 
+func (Url) TableName() string {
+	return "urls"
+}
+
 func ShortenUrl(oldUrl string, db *gorm.DB) (Url, error) {
 	shortUrl := hashTheUrl(oldUrl)
 	url := Url{OldURL: oldUrl, ShortenedURL: shortUrl}

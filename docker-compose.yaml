@@ -2,14 +2,30 @@
 version: '3.8'
 
 services:
+  postgres:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_USER: guruorgoru
+      POSTGRES_PASSWORD: balakotalu77
+      POSTGRES_DB: url_shortner
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    networks:
+      - app-network
+
   app:
     build: .
     ports:
       - "8414:8414"
     environment:
       - PORT=8414
+      - DSN_DB=host=postgres user=guruorgoru password=balakotalu77 dbname=url_shortner port=5432 sslmode=disable
     env_file:
       - .env
+    depends_on:
+      - postgres
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8414/health"]
@@ -17,3 +33,11 @@ services:
       interval: 30s
       retries: 3
       start_period: 40s
+    networks:
+      - app-network
+
+volumes:
+  pgdata:
+
+networks:
+  app-network:
