@@ -4,6 +4,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"strings"
 	"time"
 
 	urlModel "github.com/guruorgoru/ushort/internal/model"
@@ -34,7 +35,13 @@ func main() {
 	}
 	err = db.AutoMigrate(&urlModel.Url{})
 	if err != nil {
-		log.Fatal("Failed to migrate database:", err)
+		if strings.Contains(err.Error(), "already exists") {
+			log.Println("Database table already exists, skipping migration")
+		} else {
+			log.Fatal("Failed to migrate database:", err)
+		}
+	} else {
+		log.Println("Database migration completed successfully")
 	}
 	log.Println("Database migration completed successfully")
 
