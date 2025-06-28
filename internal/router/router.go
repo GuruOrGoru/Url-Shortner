@@ -19,7 +19,7 @@ func NewRouter(db *gorm.DB) chi.Router {
 		AllowCredentials: true,
 		MaxAge:           300,
 	}))
-	r.Post("/red", handler.RedirectHandler(db))
+	r.Get("/{short}", handler.RedirectHandler(db))
 	r.Route("/api/v1", func(r chi.Router) {
 		r.Get("/", handler.RootHandler())
 		r.Post("/shorten", handler.ShortenHandler(db))
