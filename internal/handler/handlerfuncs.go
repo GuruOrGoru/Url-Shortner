@@ -52,7 +52,11 @@ func ShortenHandler(db *gorm.DB) http.HandlerFunc {
 
 func RedirectHandler(db *gorm.DB) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		shortUrl := chi.URLParam(r, "short")
+		var shortUrl string
+		if err := json.NewDecoder(r.Body).Decode(&shortUrl); err != nil {
+			http.Error(w, "Invalid Request Body", http.StatusBadRequest)
+			return
+		}
 		originalUrl, err := urlModel.GetOldUrl(shortUrl, db)
 		if err != nil {
 			if errors.Is(err, gorm.ErrRecordNotFound) {
