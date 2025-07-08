@@ -25,6 +25,19 @@ func RootHandler() http.HandlerFunc {
 	}
 
 }
+func HealthHandler() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		response := struct {
+			Message string `json:"message"`
+		}{
+			Message: "All fine and good!",
+		}
+		if err := json.NewEncoder(w).Encode(response); err != nil {
+			log.Fatalln("Error while internal encoding: ", err)
+		}
+	}
+
+}
 
 func ShortenHandler(db *gorm.DB) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
